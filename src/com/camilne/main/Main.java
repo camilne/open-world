@@ -3,6 +3,7 @@ package com.camilne.main;
 import java.io.IOException;
 
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
 import com.camilne.app.Application;
@@ -13,6 +14,7 @@ import com.camilne.rendering.Camera;
 import com.camilne.rendering.Mesh;
 import com.camilne.rendering.PerspectiveCamera;
 import com.camilne.rendering.Shader;
+import com.camilne.rendering.Texture;
 import com.camilne.rendering.Vertex;
 
 public class Main implements ApplicationListener{
@@ -22,6 +24,7 @@ public class Main implements ApplicationListener{
     private PerspectiveCamera camera;
     private float speed;
     private float sensitivity;
+    private Texture testTexture;
     
     private Main() {
 	mainShader = null;
@@ -29,6 +32,7 @@ public class Main implements ApplicationListener{
 	camera = null;
 	speed = 1f;
 	sensitivity = 0.1f;
+	testTexture = null;
 	
 	ApplicationConfiguration config = new ApplicationConfiguration();
 	config.width = 1280;
@@ -62,9 +66,9 @@ public class Main implements ApplicationListener{
 	}
 	
 	final Vertex testMeshVertices[] = {
-		new Vertex(new Vector3f(0, 0, 0)),
-		new Vertex(new Vector3f(1, 0, 0)),
-		new Vertex(new Vector3f(1, 1, -1))
+		new Vertex(new Vector3f(0, 0, 0), new Vector2f(0, 0)),
+		new Vertex(new Vector3f(1, 0, 0), new Vector2f(1, 0)),
+		new Vertex(new Vector3f(1, 1, -1), new Vector2f(1, 1))
 	};
 	final int testMeshIndices[] = {
 		0, 1, 2
@@ -72,6 +76,9 @@ public class Main implements ApplicationListener{
 	testMesh = new Mesh(testMeshVertices, testMeshIndices);
 	
 	camera = new PerspectiveCamera(65.0f, 1280.0f/720.0f, 0.1f, 200f);
+	
+	Texture.setPath("res/textures/");
+	testTexture = new Texture("test.png");
     }
 
     @Override
@@ -105,11 +112,14 @@ public class Main implements ApplicationListener{
 	mainShader.bind();
 	mainShader.setUniform("m_proj", camera.getProjection());
 	mainShader.setUniform("m_view", camera.getView());
+	
+	testTexture.bind();
 	testMesh.render();
     }
 
     @Override
     public void dispose() {
+	testTexture.dispose();
     }
 
     @Override
