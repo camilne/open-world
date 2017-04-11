@@ -21,12 +21,14 @@ public class Main implements ApplicationListener{
     private Mesh testMesh;
     private PerspectiveCamera camera;
     private float speed;
+    private float sensitivity;
     
     private Main() {
 	mainShader = null;
 	testMesh = null;
 	camera = null;
 	speed = 1f;
+	sensitivity = 0.1f;
 	
 	ApplicationConfiguration config = new ApplicationConfiguration();
 	config.width = 1280;
@@ -112,6 +114,8 @@ public class Main implements ApplicationListener{
 
     @Override
     public void mouseMoved(double xpos, double ypos, double dx, double dy) {
+	camera.rotateYAxis((float) (-dx * sensitivity));
+	camera.rotateX((float) (-dy * sensitivity));
     }
 
     @Override
