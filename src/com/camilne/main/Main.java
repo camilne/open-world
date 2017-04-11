@@ -1,12 +1,19 @@
 package com.camilne.main;
 
+import java.io.IOException;
+
 import com.camilne.app.Application;
 import com.camilne.app.ApplicationConfiguration;
 import com.camilne.app.ApplicationListener;
+import com.camilne.rendering.Shader;
 
 public class Main implements ApplicationListener{
     
+    private Shader mainShader;
+    
     private Main() {
+	mainShader = null;
+	
 	ApplicationConfiguration config = new ApplicationConfiguration();
 	config.width = 1280;
 	config.height = 720;
@@ -18,6 +25,7 @@ public class Main implements ApplicationListener{
 	    app.run();
 	} catch(Exception e) {
 	    e.printStackTrace();
+	    System.exit(1);
 	}
     }
 
@@ -27,6 +35,15 @@ public class Main implements ApplicationListener{
 
     @Override
     public void create() {
+	Shader.setPath("res/shaders/");
+	Shader.setVertexExtension("vs");
+	Shader.setFragmentExtension("fs");
+	try {
+	    mainShader = new Shader("main");
+	} catch(IOException e) {
+	    e.printStackTrace();
+	    System.exit(1);
+	}
     }
 
     @Override
