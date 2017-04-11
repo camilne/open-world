@@ -189,6 +189,11 @@ public class Application implements Runnable{
 	    WINDOW.swapBuffers();
 	    GLFW.glfwPollEvents();
 	    lastTime = nowTime;
+	    
+	    final int error = GL11.glGetError();
+	    if(error != 0) {
+		System.err.println("GL Error: " + error);
+	    }
 	}
 	
 	// Dispose the user application
