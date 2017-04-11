@@ -14,7 +14,11 @@ public class Main implements ApplicationListener{
 	config.vSyncEnabled = true;
 	
 	Application app = new Application(this, config);
-	app.run();
+	try {
+	    app.run();
+	} catch(Exception e) {
+	    e.printStackTrace();
+	}
     }
 
     public static void main(String[] args) {

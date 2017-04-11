@@ -10,9 +10,7 @@ import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.util.vector.Vector2f;
 
 public class Window {
-    
-    public static final Window WINDOW = new Window();
-    
+        
     private long handle;
     private long monitor;
     
@@ -20,9 +18,7 @@ public class Window {
     private int height;
     private String title;
     
-    private Window() {
-	
-    }
+    public Window() {}
     
     /**
      * Creates a window with the specified width, height, and title on the default monitor
@@ -47,24 +43,22 @@ public class Window {
 	this.title = title;
 	this.monitor = monitor;
 	
-	handle = 0;
-	
 	// Obtain a handle for the window
 	handle = GLFW.glfwCreateWindow(width, height, title, 0, MemoryUtil.NULL);
 	// If the window did not create properly
 	if(handle == 0) {
-	    System.err.println("Error in GLFWWindow.<init>: could not create window");
-	    // Stop GLFW
-	    GLFW.glfwTerminate();
-	    // Exit the application
-	    System.exit(1);
+	    throw new IllegalStateException("Window did not initalize");
 	}
     }
     
     /**
      * Refreshes the window by swapping buffers
      */
-    public void swapBuffers() {
+    public void swapBuffers() throws IllegalStateException {
+	if(handle == 0) {
+	    throw new IllegalStateException("handle is NULL");
+	}
+	
 	GLFW.glfwSwapBuffers(handle);
     }
     
@@ -72,7 +66,11 @@ public class Window {
      * Sets the key callback for the window
      * @param callback The callback that will receive keyboard input
      */
-    public void setKeyCallback(GLFWKeyCallback callback) {
+    public void setKeyCallback(GLFWKeyCallback callback) throws IllegalStateException {
+	if(handle == 0) {
+	    throw new IllegalStateException("handle is NULL");
+	}
+	
 	GLFW.glfwSetKeyCallback(handle, callback);
     }
     
@@ -80,7 +78,11 @@ public class Window {
      * Sets the cursor position callback for the window
      * @param callback The callback that will recieve mouse movement input
      */
-    public void setCursorPosCallback(GLFWCursorPosCallback callback) {
+    public void setCursorPosCallback(GLFWCursorPosCallback callback) throws IllegalStateException {
+	if(handle == 0) {
+	    throw new IllegalStateException("handle is NULL");
+	}
+	
 	GLFW.glfwSetCursorPosCallback(handle, callback);
     }
     
@@ -89,7 +91,11 @@ public class Window {
      * @param width
      * @param height
      */
-    public void setSize(int width, int height) {
+    public void setSize(int width, int height) throws IllegalStateException {
+	if(handle == 0) {
+	    throw new IllegalStateException("handle is NULL");
+	}
+	
 	GLFW.glfwSetWindowSize(handle, width, height);
     }
     
@@ -98,6 +104,7 @@ public class Window {
      * @param position The position of the upper-left corner. If position is null, then window centers on set monitor.
      */
     public void setPosition(Vector2f position) {
+	// If the position is null, center the window
 	if(position == null) {
 	    // Get the monitor video settings
 	    ByteBuffer vidmode = null;
@@ -124,7 +131,16 @@ public class Window {
      * Sets the title of this window
      * @param title
      */
-    public void setTitle(String title) {
+    public void setTitle(String title) throws IllegalStateException {
+	if(title == null) {
+	    System.err.println("Null title");
+	    return;
+	}
+	
+	if(handle == 0) {
+	    throw new IllegalStateException("handle is NULL");
+	}
+	
 	GLFW.glfwSetWindowTitle(handle, title);
     }
     
@@ -133,52 +149,72 @@ public class Window {
      * @param flag 
      */
     public void setVSyncEnabled(boolean flag) {
-	if(flag) {
-	    GLFW.glfwSwapInterval(1);
-	} else {
-	    GLFW.glfwSwapInterval(0);
-	}
+	GLFW.glfwSwapInterval(flag ? 1 : 0);
     }
     
     /**
      * Makes this window visible
      */
-    public void show() {
+    public void show() throws IllegalStateException {
+	if(handle == 0) {
+	    throw new IllegalStateException("handle is NULL");
+	}
+	
 	GLFW.glfwShowWindow(handle);
     }
     
     /**
      * Makes this window invisible
      */
-    public void hide() {
+    public void hide() throws IllegalStateException {
+	if(handle == 0) {
+	    throw new IllegalStateException("handle is NULL");
+	}
+	
 	GLFW.glfwHideWindow(handle);
     }
     
     /**
      * Causes this window to obtain the current GLContext
      */
-    public void makeContextCurrent() {
+    public void makeContextCurrent() throws IllegalStateException {
+	if(handle == 0) {
+	    throw new IllegalStateException("handle is NULL");
+	}
+	
 	GLFW.glfwMakeContextCurrent(handle);
     }
     
     /**
      * Releases the cursor from the window and makes it visible
      */
-    public void releaseCursor() {
+    public void releaseCursor() throws IllegalStateException {
+	if(handle == 0) {
+	    throw new IllegalStateException("handle is NULL");
+	}
+	
 	GLFW.glfwSetInputMode(handle, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
     }
     
     /**
      * Captures the cursor to the window and makes it invisible
      */
-    public void captureCursor() {
+    public void captureCursor() throws IllegalStateException {
+	if(handle == 0) {
+	    throw new IllegalStateException("handle is NULL");
+	}
+	
 	GLFW.glfwSetInputMode(handle, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
     }
     
     /**
      * Destroys the context of this window
      */
-    public void destroy() {
+    public void destroy() throws IllegalStateException {
+	if(handle == 0) {
+	    throw new IllegalStateException("handle is NULL");
+	}
+	
 	GLFW.glfwDestroyWindow(handle);
     }
     
@@ -186,7 +222,11 @@ public class Window {
      * Returns whether or not this window is trying to close
      * @return true if closing
      */
-    public boolean isClosing() {
+    public boolean isClosing() throws IllegalStateException {
+	if(handle == 0) {
+	    throw new IllegalStateException("handle is NULL");
+	}
+	
 	return GLFW.glfwWindowShouldClose(handle) == 1;
     }
     
@@ -219,7 +259,11 @@ public class Window {
      * @param mode
      * @param value
      */
-    public void setInputMode(int mode, int value) {
+    public void setInputMode(int mode, int value) throws IllegalStateException {
+	if(handle == 0) {
+	    throw new IllegalStateException("handle is NULL");
+	}
+	
 	GLFW.glfwSetInputMode(handle, mode, value);
     }
     
@@ -228,7 +272,11 @@ public class Window {
      * @param button The mouse button (0 = left, 1 = right, 2 = middle)
      * @return
      */
-    public int getMouseButton(int button) {
+    public int getMouseButton(int button) throws IllegalStateException {
+	if(handle == 0) {
+	    throw new IllegalStateException("handle is NULL");
+	}
+	
 	return GLFW.glfwGetMouseButton(handle, button);
     }
     
