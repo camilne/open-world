@@ -27,9 +27,6 @@ public class Application implements Runnable{
     public Application(ApplicationListener applicationListener, ApplicationConfiguration config) {
 	this.applicationListener = applicationListener;
 	this.config = config;
-	
-	// Allow the constructor to pop
-	//new Thread(this).start();
     }
     
     /**
@@ -51,11 +48,10 @@ public class Application implements Runnable{
     /**
      * Initialize GLFW. Stops application if error occurs
      */
-    private void initGLFW() {
+    private void initGLFW() throws IllegalStateException {
 	// If there is an error in initialization
 	if(GLFW.glfwInit() == 0) {
-	    System.err.println("Error in Application.initGLFW(): GLFW failed to initialize");
-	    System.exit(1);
+	    throw new IllegalStateException("GLFW failed to initialize");
 	}
     }
     
