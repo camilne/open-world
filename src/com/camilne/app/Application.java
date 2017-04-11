@@ -1,0 +1,204 @@
+package com.camilne.app;
+
+import org.lwjgl.glfw.Callbacks;
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL13;
+import org.lwjgl.opengl.GLContext;
+
+public class Application implements Runnable{
+    
+    private ApplicationListener applicationListener;
+    private ApplicationConfiguration config;
+    
+    /**
+     * Creates a new Application
+     * @param applicationListener The user-created ApplicationListener to receive callbacks
+     */
+    public Application(ApplicationListener applicationListener) {
+	this(applicationListener, new ApplicationConfiguration());
+    }
+    
+    /**
+     * Creates a new Application
+     * @param applicationListener The user-created ApplicationListener to receive callbacks
+     * @param config The window and application configuration
+     */
+    public Application(ApplicationListener applicationListener, ApplicationConfiguration config) {
+	this.applicationListener = applicationListener;
+	this.config = config;
+	
+	// Allow the constructor to pop
+	//new Thread(this).start();
+    }
+    
+    /**
+     * Initializes everything in the application
+     */
+    private void init() {
+	initGLFW();
+	createWindow();
+	initGLFWCallbacks();
+	initGL();
+	
+	// Initialize the user application
+	applicationListener.create();
+	
+	// Make the window visible when all initialization has finished
+	Window.WINDOW.show();
+    }
+    
+    /**
+     * Initialize GLFW. Stops application if error occurs
+     */
+    private void initGLFW() {
+	// If there is an error in initialization
+	if(GLFW.glfwInit() == 0) {
+	    System.err.println("Error in Application.initGLFW(): GLFW failed to initialize");
+	    System.exit(1);
+	}
+    }
+    
+    /**
+     * Creates a GLFWWindow and gives it OpenGL context
+     */
+    private void createWindow() {
+	// Hide the window during application initialization
+	Window.hint(GLFW.GLFW_VISIBLE, GL11.GL_FALSE);
+	// Setup MSAA 4x
+	Window.hint(GLFW.GLFW_SAMPLES, 4);
+	
+	Window.WINDOW.create(config.width, config.height, config.title);
+	
+	// Make this thread and window the current context for OpenGL
+	Window.WINDOW.makeContextCurrent();
+	GLContext.createFromCurrent();
+	
+	// Set other specified window configurations
+	Window.WINDOW.setVSyncEnabled(config.vSyncEnabled);
+	Window.WINDOW.setPosition(config.position);
+    }
+    
+    /**
+     * Initialize GLFW callbacks
+     */
+    private void initGLFWCallbacks() {
+	// Set GLFW to output errors to System.err
+	GLFW.glfwSetErrorCallback(Callbacks.errorCallbackPrint(System.err));
+	
+	// Setup input callbacks
+	Window.WINDOW.setCursorPosCallback(Input.cursorPosCallback);
+	Window.WINDOW.setKeyCallback(Input.keyCallback);
+	Input.applicationListener = applicationListener;
+    }
+    
+    /**
+     * Initialize OpenGL to default settings
+     */
+    private void initGL() {
+	// Set the clear color
+	GL11.glClearColor(0, 0, 0, 1);
+	
+	// Setup viewport
+	GL11.glViewport(0, 0, Window.WINDOW.getWidth(), Window.WINDOW.getHeight());
+	
+	// Setup depth testing
+	GL11.glEnable(GL11.GL_DEPTH_TEST);
+	
+	// Setup face culling (ccw)
+	GL11.glFrontFace(GL11.GL_CCW);
+	GL11.glCullFace(GL11.GL_BACK);
+	GL11.glEnable(GL11.GL_CULL_FACE);
+	
+	// Setup blending
+	GL11.glEnable(GL11.GL_BLEND);
+	GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE_MINUS_SRC_ALPHA);
+	
+	// Enable MSAA
+	GL11.glEnable(GL13.GL_MULTISAMPLE);
+    }
+    
+    /**
+     * Main application game loop
+     */
+    @Override
+    public void run() {
+	init();
+	
+	// One second in nanoseconds
+	final long ONE_SECOND_IN_NS = 1000000000;
+	// The amount of time between frames in nanoseconds when running at 60 fps
+	final long DELTA_PER_FRAME_60_FPS_NS = ONE_SECOND_IN_NS / 60;
+	
+	// The time of this update
+	long nowTime = System.nanoTime();
+	// The time of the last update
+	long lastTime = nowTime;
+	// The last time that the fps counter was updated
+	long timeOfLastFPS = nowTime;
+	// The current fps
+	int fps = 0;
+	
+	// Whether or not the application should continue running;
+	boolean shouldRun = true;
+	
+	while(shouldRun) {
+	    
+	    // If the user terminates the window, then close the application
+	    if(Window.WINDOW.isClosing())
+		shouldRun = false;
+	    
+	    // Set the current time of this update
+	    nowTime = System.nanoTime();
+	    
+	    // If it is not time for the next frame update, then wait
+	    if(lastTime + DELTA_PER_FRAME_60_FPS_NS > nowTime)
+		continue;
+	    
+	    // Update the fps counter every second
+	    if(nowTime - timeOfLastFPS > ONE_SECOND_IN_NS) {
+		// Update the window title
+		Window.WINDOW.setTitle(config.title + " --- FPS: " + fps);
+		fps = 0;
+		timeOfLastFPS = nowTime;
+	    }
+	    fps++;
+	    
+	    // Make sure that this thread is the current OpenGL context
+	    GLContext.createFromCurrent();
+	    
+	    // Update input
+	    Input.update();
+	    
+	    // TODO: maybe migrate with ~MouseClickCallback
+	    // If the left mouse button is pressed, captures cursor
+	    if(Window.WINDOW.getMouseButton(0) == GLFW.GLFW_PRESS)
+		Window.WINDOW.setInputMode(GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+	    // If the right mouse button is pressed, releases cursor
+	    else if(Window.WINDOW.getMouseButton(1) == GLFW.GLFW_PRESS)
+		Window.WINDOW.setInputMode(GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
+	    
+	    // Updates the user application with delta time
+	    applicationListener.update((float)(nowTime - lastTime) / ONE_SECOND_IN_NS);
+	    
+	    // Clear the screen
+	    GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+	    
+	    // Render the user application
+	    applicationListener.render();
+	    
+	    // Update the window and input
+	    Window.WINDOW.swapBuffers();
+	    GLFW.glfwPollEvents();
+	    lastTime = nowTime;
+	}
+	
+	// Dispose the user application
+	applicationListener.dispose();
+	
+	// Cleanup GLFW
+	Input.dispose();
+	Window.WINDOW.destroy();
+	GLFW.glfwTerminate();
+    }
+}
