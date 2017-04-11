@@ -2,17 +2,23 @@ package com.camilne.main;
 
 import java.io.IOException;
 
+import org.lwjgl.util.vector.Vector3f;
+
 import com.camilne.app.Application;
 import com.camilne.app.ApplicationConfiguration;
 import com.camilne.app.ApplicationListener;
+import com.camilne.rendering.Mesh;
 import com.camilne.rendering.Shader;
+import com.camilne.rendering.Vertex;
 
 public class Main implements ApplicationListener{
     
     private Shader mainShader;
+    private Mesh testMesh;
     
     private Main() {
 	mainShader = null;
+	testMesh = null;
 	
 	ApplicationConfiguration config = new ApplicationConfiguration();
 	config.width = 1280;
@@ -44,6 +50,16 @@ public class Main implements ApplicationListener{
 	    e.printStackTrace();
 	    System.exit(1);
 	}
+	
+	final Vertex testMeshVertices[] = {
+		new Vertex(new Vector3f(0, 0, 0)),
+		new Vertex(new Vector3f(1, 0, 0)),
+		new Vertex(new Vector3f(1, 1, 0))
+	};
+	final int testMeshIndices[] = {
+		0, 1, 2
+	};
+	testMesh = new Mesh(testMeshVertices, testMeshIndices);
     }
 
     @Override
@@ -52,6 +68,8 @@ public class Main implements ApplicationListener{
 
     @Override
     public void render() {
+	mainShader.bind();
+	testMesh.render();
     }
 
     @Override
