@@ -10,9 +10,7 @@ import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.util.vector.Vector2f;
 
 public class Window {
-    
-    public static final Window WINDOW = new Window();
-    
+        
     private long handle;
     private long monitor;
     
@@ -20,9 +18,7 @@ public class Window {
     private int height;
     private String title;
     
-    private Window() {
-	
-    }
+    public Window() {}
     
     /**
      * Creates a window with the specified width, height, and title on the default monitor
@@ -47,17 +43,11 @@ public class Window {
 	this.title = title;
 	this.monitor = monitor;
 	
-	handle = 0;
-	
 	// Obtain a handle for the window
 	handle = GLFW.glfwCreateWindow(width, height, title, 0, MemoryUtil.NULL);
 	// If the window did not create properly
 	if(handle == 0) {
-	    System.err.println("Error in GLFWWindow.<init>: could not create window");
-	    // Stop GLFW
-	    GLFW.glfwTerminate();
-	    // Exit the application
-	    System.exit(1);
+	    throw new IllegalStateException("Window did not initalize");
 	}
     }
     
@@ -98,6 +88,7 @@ public class Window {
      * @param position The position of the upper-left corner. If position is null, then window centers on set monitor.
      */
     public void setPosition(Vector2f position) {
+	// If the position is null, center the window
 	if(position == null) {
 	    // Get the monitor video settings
 	    ByteBuffer vidmode = null;
@@ -125,6 +116,11 @@ public class Window {
      * @param title
      */
     public void setTitle(String title) {
+	if(title == null) {
+	    System.err.println("Null title");
+	    return;
+	}
+	
 	GLFW.glfwSetWindowTitle(handle, title);
     }
     
@@ -133,11 +129,7 @@ public class Window {
      * @param flag 
      */
     public void setVSyncEnabled(boolean flag) {
-	if(flag) {
-	    GLFW.glfwSwapInterval(1);
-	} else {
-	    GLFW.glfwSwapInterval(0);
-	}
+	GLFW.glfwSwapInterval(flag ? 1 : 0);
     }
     
     /**

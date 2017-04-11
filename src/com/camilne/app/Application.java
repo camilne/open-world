@@ -11,6 +11,8 @@ public class Application implements Runnable{
     private ApplicationListener applicationListener;
     private ApplicationConfiguration config;
     
+    public static final Window WINDOW = new Window();
+    
     /**
      * Creates a new Application
      * @param applicationListener The user-created ApplicationListener to receive callbacks
@@ -42,7 +44,7 @@ public class Application implements Runnable{
 	applicationListener.create();
 	
 	// Make the window visible when all initialization has finished
-	Window.WINDOW.show();
+	WINDOW.show();
     }
     
     /**
@@ -64,15 +66,15 @@ public class Application implements Runnable{
 	// Setup MSAA 4x
 	Window.hint(GLFW.GLFW_SAMPLES, 4);
 	
-	Window.WINDOW.create(config.width, config.height, config.title);
+	WINDOW.create(config.width, config.height, config.title);
 	
 	// Make this thread and window the current context for OpenGL
-	Window.WINDOW.makeContextCurrent();
+	WINDOW.makeContextCurrent();
 	GLContext.createFromCurrent();
 	
 	// Set other specified window configurations
-	Window.WINDOW.setVSyncEnabled(config.vSyncEnabled);
-	Window.WINDOW.setPosition(config.position);
+	WINDOW.setVSyncEnabled(config.vSyncEnabled);
+	WINDOW.setPosition(config.position);
     }
     
     /**
@@ -83,8 +85,8 @@ public class Application implements Runnable{
 	GLFW.glfwSetErrorCallback(Callbacks.errorCallbackPrint(System.err));
 	
 	// Setup input callbacks
-	Window.WINDOW.setCursorPosCallback(Input.cursorPosCallback);
-	Window.WINDOW.setKeyCallback(Input.keyCallback);
+	WINDOW.setCursorPosCallback(Input.cursorPosCallback);
+	WINDOW.setKeyCallback(Input.keyCallback);
 	Input.applicationListener = applicationListener;
     }
     
@@ -96,7 +98,7 @@ public class Application implements Runnable{
 	GL11.glClearColor(0, 0, 0, 1);
 	
 	// Setup viewport
-	GL11.glViewport(0, 0, Window.WINDOW.getWidth(), Window.WINDOW.getHeight());
+	GL11.glViewport(0, 0, WINDOW.getWidth(), WINDOW.getHeight());
 	
 	// Setup depth testing
 	GL11.glEnable(GL11.GL_DEPTH_TEST);
@@ -115,7 +117,7 @@ public class Application implements Runnable{
     }
     
     /**
-     * Main application game loop
+     * Main application loop
      */
     @Override
     public void run() {
@@ -141,7 +143,7 @@ public class Application implements Runnable{
 	while(shouldRun) {
 	    
 	    // If the user terminates the window, then close the application
-	    if(Window.WINDOW.isClosing())
+	    if(WINDOW.isClosing())
 		shouldRun = false;
 	    
 	    // Set the current time of this update
@@ -154,7 +156,7 @@ public class Application implements Runnable{
 	    // Update the fps counter every second
 	    if(nowTime - timeOfLastFPS > ONE_SECOND_IN_NS) {
 		// Update the window title
-		Window.WINDOW.setTitle(config.title + " --- FPS: " + fps);
+		WINDOW.setTitle(config.title + " --- FPS: " + fps);
 		fps = 0;
 		timeOfLastFPS = nowTime;
 	    }
@@ -168,11 +170,11 @@ public class Application implements Runnable{
 	    
 	    // TODO: maybe migrate with ~MouseClickCallback
 	    // If the left mouse button is pressed, captures cursor
-	    if(Window.WINDOW.getMouseButton(0) == GLFW.GLFW_PRESS)
-		Window.WINDOW.setInputMode(GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+	    if(WINDOW.getMouseButton(0) == GLFW.GLFW_PRESS)
+		WINDOW.setInputMode(GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
 	    // If the right mouse button is pressed, releases cursor
-	    else if(Window.WINDOW.getMouseButton(1) == GLFW.GLFW_PRESS)
-		Window.WINDOW.setInputMode(GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
+	    else if(WINDOW.getMouseButton(1) == GLFW.GLFW_PRESS)
+		WINDOW.setInputMode(GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
 	    
 	    // Updates the user application with delta time
 	    applicationListener.update((float)(nowTime - lastTime) / ONE_SECOND_IN_NS);
@@ -184,7 +186,7 @@ public class Application implements Runnable{
 	    applicationListener.render();
 	    
 	    // Update the window and input
-	    Window.WINDOW.swapBuffers();
+	    WINDOW.swapBuffers();
 	    GLFW.glfwPollEvents();
 	    lastTime = nowTime;
 	}
@@ -194,7 +196,7 @@ public class Application implements Runnable{
 	
 	// Cleanup GLFW
 	Input.dispose();
-	Window.WINDOW.destroy();
+	WINDOW.destroy();
 	GLFW.glfwTerminate();
     }
 }
