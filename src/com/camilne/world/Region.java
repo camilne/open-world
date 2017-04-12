@@ -10,7 +10,7 @@ import com.camilne.rendering.Vertex;
 
 public class Region {
     
-    private static final int SIZE = 2;
+    private static final int SIZE = 32;
     
     private Mesh terrainMesh;
     private Matrix4f transformationMatrix;
