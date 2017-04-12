@@ -3,6 +3,7 @@ package com.camilne.main;
 import java.io.IOException;
 
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
@@ -11,20 +12,23 @@ import com.camilne.app.ApplicationConfiguration;
 import com.camilne.app.ApplicationListener;
 import com.camilne.app.Input;
 import com.camilne.rendering.Camera;
+import com.camilne.rendering.DirectionalLight;
 import com.camilne.rendering.Mesh;
 import com.camilne.rendering.PerspectiveCamera;
+import com.camilne.rendering.PhongForwardShader;
 import com.camilne.rendering.Shader;
 import com.camilne.rendering.Texture;
 import com.camilne.rendering.Vertex;
 
 public class Main implements ApplicationListener{
     
-    private Shader mainShader;
+    private PhongForwardShader mainShader;
     private Mesh testMesh;
     private PerspectiveCamera camera;
     private float speed;
     private float sensitivity;
-    private Texture testTexture;
+    private Texture testTextureDiffuse;
+    private DirectionalLight directionalLight;
     
     private Main() {
 	mainShader = null;
@@ -32,7 +36,8 @@ public class Main implements ApplicationListener{
 	camera = null;
 	speed = 1f;
 	sensitivity = 0.1f;
-	testTexture = null;
+	testTextureDiffuse = null;
+	directionalLight = null;
 	
 	ApplicationConfiguration config = new ApplicationConfiguration();
 	config.width = 1280;
@@ -59,7 +64,8 @@ public class Main implements ApplicationListener{
 	Shader.setVertexExtension("vs");
 	Shader.setFragmentExtension("fs");
 	try {
-	    mainShader = new Shader("main");
+	    mainShader = new PhongForwardShader("main");
+	    mainShader.setUniform("m_model", new Matrix4f());
 	} catch(IOException e) {
 	    e.printStackTrace();
 	    System.exit(1);
@@ -68,17 +74,22 @@ public class Main implements ApplicationListener{
 	final Vertex testMeshVertices[] = {
 		new Vertex(new Vector3f(0, 0, 0), new Vector2f(0, 0)),
 		new Vertex(new Vector3f(1, 0, 0), new Vector2f(1, 0)),
-		new Vertex(new Vector3f(1, 1, -1), new Vector2f(1, 1))
+		new Vertex(new Vector3f(1, 1, -0.5f), new Vector2f(1, 1)),
+		new Vertex(new Vector3f(0, 1, -1), new Vector2f(0, 1)),
 	};
 	final int testMeshIndices[] = {
-		0, 1, 2
+		0, 1, 2,
+		2, 3, 0
 	};
+	Mesh.calculateNormals(testMeshVertices, testMeshIndices);
 	testMesh = new Mesh(testMeshVertices, testMeshIndices);
 	
-	camera = new PerspectiveCamera(65.0f, 1280.0f/720.0f, 0.1f, 200f);
+	camera = new PerspectiveCamera(65.0f, 1280.0f/720.0f, 0.01f, 1000f);
 	
 	Texture.setPath("res/textures/");
-	testTexture = new Texture("test.png");
+	testTextureDiffuse = new Texture("test.png");
+	
+	directionalLight = new DirectionalLight(new Vector3f(-0.5f, -0.3f, -0.75f));
     }
 
     @Override
@@ -110,16 +121,15 @@ public class Main implements ApplicationListener{
     @Override
     public void render() {
 	mainShader.bind();
-	mainShader.setUniform("m_proj", camera.getProjection());
-	mainShader.setUniform("m_view", camera.getView());
+	mainShader.update(camera, directionalLight);
 	
-	testTexture.bind();
+	testTextureDiffuse.bind();
 	testMesh.render();
     }
 
     @Override
     public void dispose() {
-	testTexture.dispose();
+	testTextureDiffuse.dispose();
     }
 
     @Override
