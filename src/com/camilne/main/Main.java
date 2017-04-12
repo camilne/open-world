@@ -19,6 +19,7 @@ import com.camilne.rendering.PhongForwardShader;
 import com.camilne.rendering.Shader;
 import com.camilne.rendering.Texture;
 import com.camilne.rendering.Vertex;
+import com.camilne.world.World;
 
 public class Main implements ApplicationListener{
     
@@ -29,6 +30,7 @@ public class Main implements ApplicationListener{
     private float sensitivity;
     private Texture testTextureDiffuse;
     private DirectionalLight directionalLight;
+    private World world;
     
     private Main() {
 	mainShader = null;
@@ -38,6 +40,7 @@ public class Main implements ApplicationListener{
 	sensitivity = 0.1f;
 	testTextureDiffuse = null;
 	directionalLight = null;
+	world = null;
 	
 	ApplicationConfiguration config = new ApplicationConfiguration();
 	config.width = 1280;
@@ -90,6 +93,8 @@ public class Main implements ApplicationListener{
 	testTextureDiffuse = new Texture("test.png");
 	
 	directionalLight = new DirectionalLight(new Vector3f(-0.5f, -0.3f, -0.75f));
+	
+	world = new World();
     }
 
     @Override
@@ -125,6 +130,9 @@ public class Main implements ApplicationListener{
 	
 	testTextureDiffuse.bind();
 	testMesh.render();
+	
+	world.render(mainShader);
+	mainShader.setUniform("m_model", new Matrix4f());
     }
 
     @Override
