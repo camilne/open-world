@@ -148,6 +148,8 @@ public class Main implements ApplicationListener{
 
     @Override
     public void keyPressed(int keycode) {
+	if(keycode == GLFW.GLFW_KEY_ESCAPE)
+	    System.exit(0);
     }
 
     @Override
