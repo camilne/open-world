@@ -17,10 +17,22 @@ public class Mesh {
      * @param indices
      */
     public Mesh(Vertex[] vertices, int[] indices) {
+	this(vertices, indices, true);
+    }
+    
+    /**
+     * Create a mesh with the specified vertices and indices and whether the normals should be calculated
+     * @param vertices
+     * @param indices
+     * @param calculateNormals
+     */
+    public Mesh(Vertex[] vertices, int[] indices, boolean calculateNormals) {
 	modelMatrix = new Matrix4f();
 	
 	// Automatically calculate normals for the mesh
-	calculateNormals(vertices, indices);
+	if(calculateNormals) {
+	    calculateNormals(vertices, indices);
+	}
 	
 	// Create a FloatBuffer to hold Vertex data
 	FloatBuffer data = BufferUtils.createFloatBuffer(vertices.length * Vertex.SIZE);
