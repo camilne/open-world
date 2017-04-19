@@ -36,8 +36,8 @@ public class Main implements ApplicationListener{
 	mainShader = null;
 	testMesh = null;
 	camera = null;
-	speed = 1f;
-	sensitivity = 0.1f;
+	speed = 5f;
+	sensitivity = 0.2f;
 	testTextureDiffuse = null;
 	directionalLight = null;
 	world = null;
@@ -47,6 +47,7 @@ public class Main implements ApplicationListener{
 	config.height = 720;
 	config.title = "OpenWorld - Demo";
 	config.vSyncEnabled = true;
+	config.show = true;
 	
 	Application app = new Application(this, config);
 	try {
@@ -121,6 +122,7 @@ public class Main implements ApplicationListener{
 	    camera.move(Camera.AXIS_Y, -speedThisFrame);
 	
 	camera.update();
+	world.update(camera);
     }
 
     @Override

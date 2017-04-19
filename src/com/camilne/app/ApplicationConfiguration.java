@@ -9,6 +9,7 @@ public class ApplicationConfiguration {
     public Vector2f position;
     public String title;
     public boolean vSyncEnabled;
+    public boolean show;
     
     /**
      * Create a new ApplicationConfiguration with default settings
@@ -19,6 +20,7 @@ public class ApplicationConfiguration {
 	position = null;
 	title = "";
 	vSyncEnabled = false;
+	show = true;
     }
 
 }
