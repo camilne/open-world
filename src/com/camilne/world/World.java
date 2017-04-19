@@ -1,17 +1,24 @@
 package com.camilne.world;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
 import com.camilne.rendering.PerspectiveCamera;
 import com.camilne.rendering.Shader;
 
 public class World {
     
-    private Region region;
+    private HashMap<String, Region> regions;
     private Skybox skybox;
     
     public World() {
-	region = new Region(0, 0);
+	regions = new HashMap<String, Region>();
+	for(int i = -5; i < 5; i++) {
+	    for(int j = -5; j < 5; j++) {
+		regions.put(i + " " + j, new Region(i, j));
+	    }
+	}
 	
 	SkyboxConfiguration config = new SkyboxConfiguration();
 	config.faceTextureSize = 1024;
@@ -32,7 +39,9 @@ public class World {
     }
     
     public void render(final Shader shader, final PerspectiveCamera camera) {
-	region.render(shader);
+	for(Entry<String, Region> region : regions.entrySet()) {
+	    region.getValue().render(shader);
+	}
 
 	if(skybox != null) {
 	    skybox.render(camera);
