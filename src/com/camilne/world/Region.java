@@ -1,11 +1,10 @@
 package com.camilne.world;
 
-import java.util.Random;
-
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
+import com.camilne.noise.SimplexNoise;
 import com.camilne.rendering.Mesh;
 import com.camilne.rendering.Shader;
 import com.camilne.rendering.Vertex;
@@ -19,15 +18,20 @@ public class Region {
     private Mesh terrainMesh;
     private Matrix4f transformationMatrix;
     
+    // The noise to create the heights of the region.
+    private static final double FEATURE_HEIGHT = 1 << 6;
+    private static final double PERSISTENCE = 0.75;
+    private static final SimplexNoise NOISE = new SimplexNoise(FEATURE_HEIGHT, PERSISTENCE);
+    
     /**
      * Creates a square region of length size SIZE, and generates tiled terrain.
      * @param x The x offset of the region
      * @param z The z offset of the region
      */
     public Region(float x, float z) {
-	createTerrain();
 	transformationMatrix = new Matrix4f();
 	transformationMatrix.translate(new Vector3f(x * SIZE, 0, z * SIZE));
+	createTerrain();
     }
     
     /**
@@ -45,10 +49,11 @@ public class Region {
      */
     private void createTerrain() {
 	float[][] heightMap = new float[SIZE + 1][SIZE + 1];
-	Random random = new Random();
 	for(int j = 0; j < SIZE + 1; j++) {
 	    for(int i = 0; i < SIZE + 1; i++) {
-		heightMap[i][j] = random.nextFloat();
+		final double xin = (i + transformationMatrix.m30) / (double)Region.SIZE;
+		final double zin = (-j+ transformationMatrix.m32) / (double)Region.SIZE;
+		heightMap[i][j] = (float)NOISE.getScaledNoise(xin, zin);
 	    }
 	}
 	
