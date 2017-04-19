@@ -20,7 +20,7 @@ public class Skybox {
     /**
      * Creates a skybox centered at the player based on the configuration.
      * @param config The configuration the skybox should be created in.
-     * @throws IOException If the texture or shader is not loaded correctly
+     * @throws IOException If the texture or shader is not loaded correctly.
      */
     public Skybox(final SkyboxConfiguration config) throws IOException {
 	// The pixel size of the texture on each face.
@@ -115,11 +115,11 @@ public class Skybox {
     }
     
     /**
-     * 
-     * @param texture
-     * @param face
-     * @param config
-     * @return
+     * Creates a texture region of the skybox face.
+     * @param texture The texture from which to create the skybox region.
+     * @param face The face to locate on the texture.
+     * @param config The configuration to use to locate the feature.
+     * @return The new TextureRegion representing the texture of the face.
      */
     public TextureRegion createRegion(final Texture texture, final SkyboxFace face, final SkyboxConfiguration config) {
 	final int x = (int)config.get(face).x;
