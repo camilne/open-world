@@ -132,6 +132,7 @@ public class Main implements ApplicationListener{
 	testMesh.render();
 	
 	world.render(mainShader, camera);
+	mainShader.bind();
 	mainShader.setUniform("m_model", new Matrix4f());
     }
 
