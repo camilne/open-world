@@ -35,6 +35,7 @@ public class Region {
      * @param shader The bound shader
      */
     public void render(Shader shader) {
+	shader.bind();
 	shader.setUniform("m_model", transformationMatrix);
 	terrainMesh.render();
     }

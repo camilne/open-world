@@ -131,7 +131,8 @@ public class Main implements ApplicationListener{
 	testTextureDiffuse.bind();
 	testMesh.render();
 	
-	world.render(mainShader);
+	world.render(mainShader, camera);
+	mainShader.bind();
 	mainShader.setUniform("m_model", new Matrix4f());
     }
 
