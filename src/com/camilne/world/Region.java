@@ -13,7 +13,7 @@ import com.camilne.rendering.Vertex;
 public class Region {
     
     // Side of the length of the region in tiles.
-    private static final int SIZE = 32;
+    public static final int SIZE = 32;
     
     // Holds terrain vertex data as well as region transformation.
     private Mesh terrainMesh;
@@ -193,7 +193,7 @@ public class Region {
     private void smoothMesh(Vertex[] vertices) {
 	for(int j = 0; j < SIZE; j++) {
 	    for (int i = 0; i < SIZE; i++) {
-		int idx = i + SIZE * j * 4;
+		int idx = (i + SIZE * j) * 4;
 		Vector3f[] normals = new Vector3f[4];
 		
 		normals[0] = vertices[idx].getNormal();
