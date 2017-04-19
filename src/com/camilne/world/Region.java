@@ -27,7 +27,7 @@ public class Region {
     public Region(float x, float z) {
 	createTerrain();
 	transformationMatrix = new Matrix4f();
-	transformationMatrix.translate(new Vector2f(x, z));
+	transformationMatrix.translate(new Vector3f(x * SIZE, 0, z * SIZE));
     }
     
     /**
