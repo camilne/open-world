@@ -44,7 +44,11 @@ public class Application implements Runnable{
 	applicationListener.create();
 	
 	// Make the window visible when all initialization has finished
-	WINDOW.show();
+	if(config.show) {
+	    WINDOW.show();
+	} else {
+	    WINDOW.hide();
+	}
     }
     
     /**
