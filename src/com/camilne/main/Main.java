@@ -91,7 +91,7 @@ public class Main implements ApplicationListener{
 	camera = new PerspectiveCamera(65.0f, 1280.0f/720.0f, 0.01f, 1000f);
 	
 	Texture.setPath("res/textures/");
-	testTextureDiffuse = new Texture("test.png");
+	testTextureDiffuse = new Texture("grass.png");
 	
 	directionalLight = new DirectionalLight(new Vector3f(-0.5f, -0.3f, -0.75f));
 	
