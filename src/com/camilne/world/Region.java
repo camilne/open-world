@@ -13,6 +13,7 @@ public class Region {
     
     // Side of the length of the region in tiles.
     public static final int SIZE = 32;
+    private static final int HEIGHTMAP_SIZE = SIZE + 2;
     
     // Holds terrain vertex data as well as region transformation.
     private Mesh terrainMesh;
@@ -48,16 +49,16 @@ public class Region {
      * Generates tiled terrain. The structure of the terrain is 4 vertices and 6 indices to a tile.
      */
     private void createTerrain() {
-	float[][] heightMap = new float[SIZE + 1][SIZE + 1];
-	for(int j = 0; j < SIZE + 1; j++) {
-	    for(int i = 0; i < SIZE + 1; i++) {
+	float[][] heightMap = new float[HEIGHTMAP_SIZE][HEIGHTMAP_SIZE];
+	for(int j = 0; j < HEIGHTMAP_SIZE; j++) {
+	    for(int i = 0; i < HEIGHTMAP_SIZE; i++) {
 		final double xin = (i + transformationMatrix.m30) / (double)Region.SIZE;
 		final double zin = (-j+ transformationMatrix.m32) / (double)Region.SIZE;
 		heightMap[i][j] = (float)NOISE.getScaledNoise(xin, zin);
 	    }
 	}
 	
-	// Holds the vertex data for the region.
+	// Holds the vertex data for the region. (plus one more on zneg and xpos for normal calculation).
 	Vertex[] vertices = new Vertex[SIZE * SIZE * 4];
 	int idx = 0; // Used to access a 1-D array through a double for-loop.
 	for(int j = 0; j < SIZE; j++) {
@@ -75,8 +76,8 @@ public class Region {
 	}
 	
 	// Automatically calculate the normals.
-	calculateNormals(vertices);
-	smoothMesh(vertices);
+	calculateNormals(vertices, heightMap);
+	//smoothMesh(vertices);
 	
 	// Holds the index data for the region.
 	int[] indices = new int[SIZE * SIZE * 6];
@@ -100,63 +101,37 @@ public class Region {
     }
     
     /**
-     * Calculates the normals per face. Creates artifact of squares in the mesh.
+     * Calculates the normals per face.
      * @param vertices 
      */
-    private void calculateNormals(Vertex[] vertices) {
+    private void calculateNormals(Vertex[] vertices, float[][] heightMap) {
 	// Calculates the normal to each face.
-	for(int i = 0; i < vertices.length; i++) {
-	    // Uses the index of the vertex to determine which vectors to cross. Refer the the vertex data specification above.
-	    switch(i % 4) {
-	    case 0:
-		if(i + 3 < vertices.length) {
-		    calculateNormal(vertices[i], vertices[i + 1], vertices[i + 3]);
-		}
-		break;
-	    case 1:
-	    case 2:
-		if(i + 1 < vertices.length && i - 1 >= 0) {
-		    calculateNormal(vertices[i], vertices[i + 1], vertices[i - 1]);
-		}
-		break;
-	    case 3:
-		if(i - 3 >= 0) {
-		    calculateNormal(vertices[i], vertices[i - 3], vertices[i - 1]);
-		}
-		break;
-	    }
-	}
-    }
-    
-    /**
-     * Calculates the normals per face.
-     * @param vertices
-     */
-    @SuppressWarnings("unused")
-    private void calculateNormals2(Vertex[] vertices) {
-	// Calculate the normal of each lower row of a tile.
-	for(int i = 0; i < vertices.length; i++) {
-	    switch(i % 4) {
-	    case 0:
-		if(i + 3 < vertices.length) {
-		    calculateNormal(vertices[i], vertices[i + 1], vertices[i + 3]);
-		}
-		break;
-	    case 1:
-		if(i + 1 < vertices.length && i - 1 >= 0) {
-		    calculateNormal(vertices[i], vertices[i + 1], vertices[i - 1]);
-		}
-		break;
-	    case 2:
-		if(i + SIZE * 4 < vertices.length) {
-		    calculateNormal(vertices[i], vertices[i + SIZE * 4], vertices[i + SIZE * 4 - 2]);
-		}
-		break;
-	    case 3:
-		if(i + SIZE * 4 < vertices.length) {
-		    calculateNormal(vertices[i], vertices[i + SIZE * 4 - 2], vertices[i + SIZE * 4]);
-		}
-		break;
+	int idx = 0;
+	for(int j = 0; j < SIZE; j++) {
+	    for(int i = 0; i < SIZE; i++) {
+		Vector3f v = new Vector3f(i, heightMap[i][j], j);
+		Vector3f v1 = new Vector3f(i + 1, heightMap[i + 1][j], j);
+		Vector3f v2 = new Vector3f(i, heightMap[i][j + 1], j + 1);
+		
+		calculateNormal(vertices[idx++], v, v1, v2);
+		
+		v.y = heightMap[i + 1][j];
+		v1.y = heightMap[i + 2][j];
+		v2.y = heightMap[i + 1][j + 1];
+		
+		calculateNormal(vertices[idx++], v, v1, v2);
+		
+		v.y = heightMap[i + 1][j + 1];
+		v1.y = heightMap[i + 2][j + 1];
+		v2.y = heightMap[i + 1][j + 2];
+		
+		calculateNormal(vertices[idx++], v, v1, v2);
+		
+		v.y = heightMap[i][j + 1];
+		v1.y = heightMap[i + 1][j + 1];
+		v2.y = heightMap[i][j + 2];
+		
+		calculateNormal(vertices[idx++], v, v1, v2);
 	    }
 	}
     }
@@ -167,13 +142,13 @@ public class Region {
      * @param v1 The first vertex (Right-hand coordinate system)
      * @param v2 The second vertex (Right-hand coordinate system)
      */
-    private void calculateNormal(Vertex src, Vertex v1, Vertex v2) {
+    private void calculateNormal(Vertex src, Vector3f v, Vector3f v1, Vector3f v2) {
 	// Get the displacement vectors between the src vertex and the adjacent vertices.
-	Vector3f a = Vector3f.sub(v1.getPos(), src.getPos(), null);
-	Vector3f b = Vector3f.sub(v2.getPos(), src.getPos(), null);
+	Vector3f a = Vector3f.sub(v1, v, null);
+	Vector3f b = Vector3f.sub(v2, v, null);
 	
 	// Calculate the normal and set it.
-	Vector3f.cross(a, b, src.getNormal()).normalise();
+	Vector3f.cross(b, a, src.getNormal()).normalise();
     }
         
     /**
@@ -192,9 +167,10 @@ public class Region {
     }
     
     /**
-     * Smooths the mesh normals by averaging overlapping vertices.
+     * Smoothes the mesh normals by averaging overlapping vertices.
      * @param vertices The vertices to be smoothed
      */
+    @SuppressWarnings("unused")
     private void smoothMesh(Vertex[] vertices) {
 	for(int j = 0; j < SIZE; j++) {
 	    for (int i = 0; i < SIZE; i++) {
