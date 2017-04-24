@@ -74,7 +74,7 @@ public class Main implements ApplicationListener{
 	Texture.setPath("res/textures/");
 	testTextureDiffuse = new Texture("grass.png");
 	
-	directionalLight = new DirectionalLight(new Vector3f(-0.5f, -0.3f, -0.75f));
+	directionalLight = new DirectionalLight(new Vector3f(-0.5f, -0.9f, 0.65f));
 	
 	world = new World();
     }
