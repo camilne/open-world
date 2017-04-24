@@ -26,6 +26,9 @@ public class Camera {
     private Vector3f forward;
     private Vector3f right;
     
+    // The camera's rotation around its x-axis
+    private float pitch;
+    
     /**
      *	Enumeration of all possible directions
      */
@@ -127,6 +130,7 @@ public class Camera {
      */
     public void rotateX(float angle) {
 	rotate(right, up, forward, angle);
+	pitch += angle;
     }
     
     /**
@@ -202,6 +206,14 @@ public class Camera {
     public Matrix4f getView() {
         return view;
     }
+    
+    /**
+     * Sets the view matrix
+     * @param view
+     */
+    public void setView(Matrix4f view) {
+	this.view = view;
+    }
 
     /**
      * Returns the camera's up vector
@@ -225,5 +237,32 @@ public class Camera {
      */
     public Vector3f getRight() {
         return right;
+    }
+    
+    /**
+     * Returns the camera's pitch
+     * @return
+     */
+    public float getPitch() {
+	return pitch;
+    }
+    
+    /**
+     * Inverts the camera's pitch
+     */
+    public void invertPitch() {
+	rotateX(-pitch * 2);
+    }
+    
+    /**
+     * Creates a copy of this camera object
+     * @return
+     */
+    public Camera copy() {
+	Camera res = new Camera(new Matrix4f(getProjection()));
+	res.setPosition(new Vector3f(getPosition()));
+	res.setView(new Matrix4f(getView()));
+	
+	return res;
     }
 }
