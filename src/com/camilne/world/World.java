@@ -5,14 +5,22 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import org.lwjgl.util.vector.Matrix4f;
+import org.lwjgl.util.vector.Vector3f;
+
+import com.camilne.rendering.DirectionalLight;
 import com.camilne.rendering.PerspectiveCamera;
-import com.camilne.rendering.Shader;
+import com.camilne.rendering.PhongForwardShader;
+import com.camilne.rendering.Texture;
 
 public class World {
     
     private HashMap<String, Region> regions;
     private Skybox skybox;
     private int viewDistance;
+    private PhongForwardShader shader;
+    private DirectionalLight directionalLight;
+    private Texture grassTexture;
     
     public World() {
 	regions = new HashMap<String, Region>();
@@ -34,6 +42,17 @@ public class World {
 	    e.printStackTrace();
 	}
 	
+	try {
+	    shader = new PhongForwardShader("main");
+	    shader.setUniform("m_model", new Matrix4f());
+	} catch(IOException e) {
+	    e.printStackTrace();
+	    System.exit(1);
+	}
+	
+	directionalLight = new DirectionalLight(new Vector3f(-0.5f, -0.9f, 0.65f));
+	grassTexture = new Texture("grass.png");
+	
 	viewDistance = 4;
     }
     
@@ -45,9 +64,13 @@ public class World {
 	addRegionsInRange(camera);	
     }
     
-    public void render(final Shader shader, final PerspectiveCamera camera) {
+    public void render(final PerspectiveCamera camera) {
+	shader.bind();
+	shader.update(camera, directionalLight);
+	grassTexture.bind();
+	
 	for(Entry<String, Region> region : regions.entrySet()) {
-	    region.getValue().render(shader);
+	    region.getValue().render(shader, camera);
 	}
 
 	if(skybox != null) {
