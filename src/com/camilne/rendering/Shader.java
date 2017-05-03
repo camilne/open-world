@@ -10,6 +10,7 @@ import java.util.Set;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl.util.vector.Vector4f;
 
 import com.camilne.util.Util;
 
@@ -266,6 +267,15 @@ public class Shader {
      */
     public void setUniform(String uniform, Vector3f value) {
 	GL20.glUniform3f(uniforms.get(uniform), value.x, value.y, value.z);
+    }
+    
+    /**
+     * Sets the specified uniform with the specified value
+     * @param uniform
+     * @param value The Vector4f value
+     */
+    public void setUniform(String uniform, Vector4f value) {
+	GL20.glUniform4f(uniforms.get(uniform), value.x, value.y, value.z, value.w);
     }
 
     /**

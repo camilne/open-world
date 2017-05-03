@@ -6,7 +6,9 @@ import org.lwjgl.util.vector.Vector3f;
 
 import com.camilne.noise.SimplexNoise;
 import com.camilne.rendering.Mesh;
+import com.camilne.rendering.PerspectiveCamera;
 import com.camilne.rendering.Shader;
+import com.camilne.rendering.Texture;
 import com.camilne.rendering.Vertex;
 
 public class Region {
@@ -18,6 +20,11 @@ public class Region {
     // Holds terrain vertex data as well as region transformation.
     private Mesh terrainMesh;
     private Matrix4f transformationMatrix;
+    
+    private static Texture grassTexture;
+    
+    // The water for this region.
+    private WaterRegion water;
     
     // The noise to create the heights of the region.
     private static final double FEATURE_HEIGHT = 1 << 6;
@@ -32,17 +39,32 @@ public class Region {
     public Region(float x, float z) {
 	transformationMatrix = new Matrix4f();
 	transformationMatrix.translate(new Vector3f(x * SIZE, 0, z * SIZE));
+	
+	if(grassTexture == null) {
+	    grassTexture = new Texture("grass.png");
+	}
+	
 	createTerrain();
+	water = new WaterRegion(x * SIZE, z * SIZE);
+    }
+    
+    public void preRenderWater(final PerspectiveCamera camera, final World world) {
+	water.preRender(camera, world);
     }
     
     /**
-     * Renders the transformed region
+     * Renders the transformed region.
      * @param shader The bound shader
      */
     public void render(Shader shader) {
 	shader.bind();
 	shader.setUniform("m_model", transformationMatrix);
+	grassTexture.bind();
 	terrainMesh.render();
+    }
+    
+    public void renderWater(final PerspectiveCamera camera) {
+    	water.render(camera);
     }
     
     /**
@@ -202,5 +224,12 @@ public class Region {
 		}
 	    }
 	}
+    }
+    
+    /**
+     * Frees memory on the graphics card.
+     */
+    public void dispose() {
+	water.dispose();
     }
 }

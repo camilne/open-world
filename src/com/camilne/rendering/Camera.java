@@ -57,6 +57,17 @@ public class Camera {
 	right = new Vector3f(AXIS_X);
     }
     
+    public Camera(final Camera other) {
+	this.projection = new Matrix4f(other.projection);
+	this.view = new Matrix4f(other.view);
+	this.position = new Vector3f(other.position);
+	this.orientation = new Quaternion(other.orientation);
+	this.up = new Vector3f(other.up);
+	this.forward = new Vector3f(other.forward);
+	this.right = new Vector3f(other.right);
+	this.pitch = other.pitch;
+    }
+    
     /**
      * Updates the view matrix
      */
@@ -259,9 +270,14 @@ public class Camera {
      * @return
      */
     public Camera copy() {
-	Camera res = new Camera(new Matrix4f(getProjection()));
-	res.setPosition(new Vector3f(getPosition()));
-	res.setView(new Matrix4f(getView()));
+	Camera res = new Camera(new Matrix4f(this.getProjection()));
+	res.setPosition(new Vector3f(this.getPosition()));
+	res.setView(new Matrix4f(this.getView()));
+	res.orientation = new Quaternion(this.orientation);
+	res.up = new Vector3f(this.up);
+	res.right = new Vector3f(this.right);
+	res.forward = new Vector3f(this.forward);
+	res.pitch = this.pitch;
 	
 	return res;
     }

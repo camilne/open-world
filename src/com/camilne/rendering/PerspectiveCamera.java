@@ -1,6 +1,7 @@
 package com.camilne.rendering;
 
 import org.lwjgl.util.vector.Matrix4f;
+import org.lwjgl.util.vector.Vector3f;
 
 public class PerspectiveCamera extends Camera{
     
@@ -23,6 +24,15 @@ public class PerspectiveCamera extends Camera{
 	this.aspect = aspect;
 	this.zNear = zNear;
 	this.zFar = zFar;
+    }
+    
+    public PerspectiveCamera(PerspectiveCamera other) {
+	super(other);
+	
+	this.fov = other.fov;
+	this.aspect = other.aspect;
+	this.zNear = other.zNear;
+	this.zFar = other.zFar;
     }
     
     /**
@@ -86,6 +96,14 @@ public class PerspectiveCamera extends Camera{
      */
     public float getzFar() {
         return zFar;
+    }
+
+    public PerspectiveCamera copy() {
+	PerspectiveCamera res = new PerspectiveCamera(fov, aspect, zNear, zFar);
+	res.setPosition(new Vector3f(getPosition()));
+	res.setProjection(new Matrix4f(getProjection()));
+	
+	return res;
     }
 
 }

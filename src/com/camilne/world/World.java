@@ -7,11 +7,11 @@ import java.util.Map.Entry;
 
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl.util.vector.Vector4f;
 
 import com.camilne.rendering.DirectionalLight;
 import com.camilne.rendering.PerspectiveCamera;
 import com.camilne.rendering.PhongForwardShader;
-import com.camilne.rendering.Texture;
 
 public class World {
     
@@ -20,7 +20,6 @@ public class World {
     private int viewDistance;
     private PhongForwardShader shader;
     private DirectionalLight directionalLight;
-    private Texture grassTexture;
     
     public World() {
 	regions = new HashMap<String, Region>();
@@ -51,7 +50,6 @@ public class World {
 	}
 	
 	directionalLight = new DirectionalLight(new Vector3f(-0.5f, -0.9f, 0.65f));
-	grassTexture = new Texture("grass.png");
 	
 	viewDistance = 4;
     }
@@ -67,14 +65,34 @@ public class World {
     public void render(final PerspectiveCamera camera) {
 	shader.bind();
 	shader.update(camera, directionalLight);
-	grassTexture.bind();
 	
 	for(Entry<String, Region> region : regions.entrySet()) {
-	    region.getValue().render(shader, camera);
+	    region.getValue().preRenderWater(camera, this);
 	}
-
+	
+	renderWithoutWater(camera, false);
+	
+	for(Entry<String, Region> region : regions.entrySet()) {
+	    region.getValue().renderWater(camera);
+	}
+    }
+    
+    public void renderWithoutWater(final PerspectiveCamera camera, final boolean renderReflected) {
+	shader.bind();
+	shader.update(camera, directionalLight);
+	
+	if(renderReflected) {
+	    shader.setUniform("clip_plane", new Vector4f(0, 1, 0, -WaterRegion.WATER_HEIGHT));
+	} else {
+	    shader.setUniform("clip_plane", new Vector4f(0, 0, 0, 0));
+	}
+	
 	if(skybox != null) {
 	    skybox.render(camera);
+	}
+	
+	for(Entry<String, Region> region : regions.entrySet()) {
+	    region.getValue().render(shader);
 	}
     }
     
@@ -89,6 +107,7 @@ public class World {
 	    }
 	}
 	for(String key : regionsToRemove) {
+	    regions.get(key).dispose();
 	    regions.remove(key);
 	}
 	regionsToRemove.clear();
