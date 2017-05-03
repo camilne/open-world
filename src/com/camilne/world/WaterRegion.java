@@ -3,6 +3,7 @@ package com.camilne.world;
 import java.io.IOException;
 
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector2f;
@@ -11,6 +12,7 @@ import org.lwjgl.util.vector.Vector3f;
 import com.camilne.rendering.FrameBuffer;
 import com.camilne.rendering.Mesh;
 import com.camilne.rendering.PerspectiveCamera;
+import com.camilne.rendering.Texture;
 import com.camilne.rendering.Vertex;
 
 public class WaterRegion {
@@ -27,6 +29,8 @@ public class WaterRegion {
     
     // Translates the water to match the parent region.
     private Matrix4f transformation;
+    // Animates the water along the displacement texture.
+    private static float moveFactor;
     
     // Shader to render the water.
     private static WaterShader shader = null;
@@ -40,6 +44,9 @@ public class WaterRegion {
     // The height of the water in the world.
     public static final float WATER_HEIGHT = 0;
     
+    // The wave displacement texture of the water.
+    private static Texture dudvTexture;
+    
     /**
      * Creates a water region at the specified x and z coordinates. Scaled to the size of a region.
      * @param x
@@ -52,10 +59,15 @@ public class WaterRegion {
 	    try {
 		shader = new WaterShader("water");
 		shader.setUniform("reflection_texture", 0);
+		shader.setUniform("dudv_texture", 1);
 	    } catch (IOException e) {
 		e.printStackTrace();
 		System.exit(1);
 	    }
+	}
+	
+	if(dudvTexture == null) {
+	    dudvTexture = new Texture("waterdudv.png");
 	}
 	
 	framebuffer = new FrameBuffer(REFLECTION_WIDTH, REFLECTION_HEIGHT);
@@ -88,6 +100,11 @@ public class WaterRegion {
 	GL11.glDisable(GL30.GL_CLIP_DISTANCE0);
     }
     
+    public static void updateMovement(final double delta) {
+	moveFactor += 0.01f * delta;
+	moveFactor %= 1;
+    }
+    
     /**
      * Renders the water.
      * @param camera
@@ -97,8 +114,10 @@ public class WaterRegion {
 	shader.setUniform("m_model", transformation);
 	shader.setUniform("m_view", camera.getView());
 	shader.setUniform("m_proj", camera.getProjection());
+	shader.setUniform("move_factor", moveFactor);
 	
 	framebuffer.bindTexture();
+	dudvTexture.bind(GL13.GL_TEXTURE1);
 	
 	MESH.render();
     }

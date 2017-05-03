@@ -82,7 +82,7 @@ public class Main implements ApplicationListener{
 	    camera.move(Camera.AXIS_Y, -speedThisFrame);
 	
 	camera.update();
-	world.update(camera);
+	world.update(camera, delta);
     }
 
     @Override

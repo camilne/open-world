@@ -54,12 +54,15 @@ public class World {
 	viewDistance = 4;
     }
     
-    public void update(final PerspectiveCamera camera) {	
+    public void update(final PerspectiveCamera camera, final float delta) {	
 	// Check regions that should unload
 	removeRegionsOutOfRange(camera);
 	
 	// Check regions that should load
 	addRegionsInRange(camera);	
+	
+	// Animate water.
+	WaterRegion.updateMovement(delta);
     }
     
     public void render(final PerspectiveCamera camera) {
