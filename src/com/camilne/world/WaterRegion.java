@@ -9,6 +9,7 @@ import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
+import com.camilne.rendering.DirectionalLight;
 import com.camilne.rendering.FrameBuffer;
 import com.camilne.rendering.Mesh;
 import com.camilne.rendering.PerspectiveCamera;
@@ -46,6 +47,8 @@ public class WaterRegion {
     
     // The wave displacement texture of the water.
     private static Texture dudvTexture;
+    // The normal texture of the water.
+    private static Texture normalTexture;
     
     /**
      * Creates a water region at the specified x and z coordinates. Scaled to the size of a region.
@@ -60,6 +63,7 @@ public class WaterRegion {
 		shader = new WaterShader("water");
 		shader.setUniform("reflection_texture", 0);
 		shader.setUniform("dudv_texture", 1);
+		shader.setUniform("normal_texture", 2);
 	    } catch (IOException e) {
 		e.printStackTrace();
 		System.exit(1);
@@ -68,6 +72,10 @@ public class WaterRegion {
 	
 	if(dudvTexture == null) {
 	    dudvTexture = new Texture("waterdudv.png");
+	}
+	
+	if(normalTexture == null) {
+	    normalTexture = new Texture("waternormal.png");
 	}
 	
 	framebuffer = new FrameBuffer(REFLECTION_WIDTH, REFLECTION_HEIGHT);
@@ -109,15 +117,18 @@ public class WaterRegion {
      * Renders the water.
      * @param camera
      */
-    public void render(final PerspectiveCamera camera) {
+    public void render(final PerspectiveCamera camera, final DirectionalLight light) {
 	shader.bind();
 	shader.setUniform("m_model", transformation);
 	shader.setUniform("m_view", camera.getView());
 	shader.setUniform("m_proj", camera.getProjection());
 	shader.setUniform("move_factor", moveFactor);
+	shader.setUniform("camera_pos", camera.getPosition());
+	shader.setUniform("light_pos", light.getDirection().negate(null));
 	
 	framebuffer.bindTexture();
 	dudvTexture.bind(GL13.GL_TEXTURE1);
+	normalTexture.bind(GL13.GL_TEXTURE2);
 	
 	MESH.render();
     }

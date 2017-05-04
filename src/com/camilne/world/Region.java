@@ -5,6 +5,7 @@ import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
 import com.camilne.noise.SimplexNoise;
+import com.camilne.rendering.DirectionalLight;
 import com.camilne.rendering.Mesh;
 import com.camilne.rendering.PerspectiveCamera;
 import com.camilne.rendering.Shader;
@@ -63,8 +64,8 @@ public class Region {
 	terrainMesh.render();
     }
     
-    public void renderWater(final PerspectiveCamera camera) {
-    	water.render(camera);
+    public void renderWater(final PerspectiveCamera camera, final DirectionalLight light) {
+    	water.render(camera, light);
     }
     
     /**

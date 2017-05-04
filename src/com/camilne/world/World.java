@@ -76,7 +76,7 @@ public class World {
 	renderWithoutWater(camera, false);
 	
 	for(Entry<String, Region> region : regions.entrySet()) {
-	    region.getValue().renderWater(camera);
+	    region.getValue().renderWater(camera, directionalLight);
 	}
     }
     
