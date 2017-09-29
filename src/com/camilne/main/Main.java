@@ -1,40 +1,28 @@
 package com.camilne.main;
 
-import java.io.IOException;
-
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.util.vector.Matrix4f;
-import org.lwjgl.util.vector.Vector3f;
 
 import com.camilne.app.Application;
 import com.camilne.app.ApplicationConfiguration;
 import com.camilne.app.ApplicationListener;
 import com.camilne.app.Input;
 import com.camilne.rendering.Camera;
-import com.camilne.rendering.DirectionalLight;
 import com.camilne.rendering.PerspectiveCamera;
-import com.camilne.rendering.PhongForwardShader;
 import com.camilne.rendering.Shader;
 import com.camilne.rendering.Texture;
 import com.camilne.world.World;
 
 public class Main implements ApplicationListener{
     
-    private PhongForwardShader mainShader;
     private PerspectiveCamera camera;
     private float speed;
     private float sensitivity;
-    private Texture testTextureDiffuse;
-    private DirectionalLight directionalLight;
     private World world;
     
     private Main() {
-	mainShader = null;
 	camera = null;
 	speed = 5f;
 	sensitivity = 0.2f;
-	testTextureDiffuse = null;
-	directionalLight = null;
 	world = null;
 	
 	ApplicationConfiguration config = new ApplicationConfiguration();
@@ -62,19 +50,10 @@ public class Main implements ApplicationListener{
 	Shader.setPath("res/shaders/");
 	Shader.setVertexExtension("vs");
 	Shader.setFragmentExtension("fs");
-	try {
-	    mainShader = new PhongForwardShader("main");
-	    mainShader.setUniform("m_model", new Matrix4f());
-	} catch(IOException e) {
-	    e.printStackTrace();
-	    System.exit(1);
-	}
-	camera = new PerspectiveCamera(65.0f, 1280.0f/720.0f, 0.01f, 1000f);
 	
 	Texture.setPath("res/textures/");
-	testTextureDiffuse = new Texture("grass.png");
 	
-	directionalLight = new DirectionalLight(new Vector3f(-0.5f, -0.9f, 0.65f));
+	camera = new PerspectiveCamera(65.0f, 1280.0f/720.0f, 0.01f, 1000f);
 	
 	world = new World();
     }
@@ -103,24 +82,16 @@ public class Main implements ApplicationListener{
 	    camera.move(Camera.AXIS_Y, -speedThisFrame);
 	
 	camera.update();
-	world.update(camera);
+	world.update(camera, delta);
     }
 
     @Override
-    public void render() {
-	mainShader.bind();
-	mainShader.update(camera, directionalLight);
-	
-	testTextureDiffuse.bind();
-	
-	world.render(mainShader, camera);
-	mainShader.bind();
-	mainShader.setUniform("m_model", new Matrix4f());
+    public void render() {	
+	world.render(camera);
     }
 
     @Override
     public void dispose() {
-	testTextureDiffuse.dispose();
     }
 
     @Override

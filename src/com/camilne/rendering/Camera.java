@@ -26,6 +26,9 @@ public class Camera {
     private Vector3f forward;
     private Vector3f right;
     
+    // The camera's rotation around its x-axis
+    private float pitch;
+    
     /**
      *	Enumeration of all possible directions
      */
@@ -52,6 +55,17 @@ public class Camera {
 	up = new Vector3f(AXIS_Y);
 	forward = new Vector3f(AXIS_Z).negate(null);
 	right = new Vector3f(AXIS_X);
+    }
+    
+    public Camera(final Camera other) {
+	this.projection = new Matrix4f(other.projection);
+	this.view = new Matrix4f(other.view);
+	this.position = new Vector3f(other.position);
+	this.orientation = new Quaternion(other.orientation);
+	this.up = new Vector3f(other.up);
+	this.forward = new Vector3f(other.forward);
+	this.right = new Vector3f(other.right);
+	this.pitch = other.pitch;
     }
     
     /**
@@ -127,6 +141,7 @@ public class Camera {
      */
     public void rotateX(float angle) {
 	rotate(right, up, forward, angle);
+	pitch += angle;
     }
     
     /**
@@ -202,6 +217,14 @@ public class Camera {
     public Matrix4f getView() {
         return view;
     }
+    
+    /**
+     * Sets the view matrix
+     * @param view
+     */
+    public void setView(Matrix4f view) {
+	this.view = view;
+    }
 
     /**
      * Returns the camera's up vector
@@ -225,5 +248,37 @@ public class Camera {
      */
     public Vector3f getRight() {
         return right;
+    }
+    
+    /**
+     * Returns the camera's pitch
+     * @return
+     */
+    public float getPitch() {
+	return pitch;
+    }
+    
+    /**
+     * Inverts the camera's pitch
+     */
+    public void invertPitch() {
+	rotateX(-pitch * 2);
+    }
+    
+    /**
+     * Creates a copy of this camera object
+     * @return
+     */
+    public Camera copy() {
+	Camera res = new Camera(new Matrix4f(this.getProjection()));
+	res.setPosition(new Vector3f(this.getPosition()));
+	res.setView(new Matrix4f(this.getView()));
+	res.orientation = new Quaternion(this.orientation);
+	res.up = new Vector3f(this.up);
+	res.right = new Vector3f(this.right);
+	res.forward = new Vector3f(this.forward);
+	res.pitch = this.pitch;
+	
+	return res;
     }
 }

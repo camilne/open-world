@@ -5,14 +5,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import org.lwjgl.util.vector.Matrix4f;
+import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl.util.vector.Vector4f;
+
+import com.camilne.rendering.DirectionalLight;
 import com.camilne.rendering.PerspectiveCamera;
-import com.camilne.rendering.Shader;
+import com.camilne.rendering.PhongForwardShader;
 
 public class World {
     
     private HashMap<String, Region> regions;
     private Skybox skybox;
     private int viewDistance;
+    private PhongForwardShader shader;
+    private DirectionalLight directionalLight;
     
     public World() {
 	regions = new HashMap<String, Region>();
@@ -34,24 +41,61 @@ public class World {
 	    e.printStackTrace();
 	}
 	
+	try {
+	    shader = new PhongForwardShader("main");
+	    shader.setUniform("m_model", new Matrix4f());
+	} catch(IOException e) {
+	    e.printStackTrace();
+	    System.exit(1);
+	}
+	
+	directionalLight = new DirectionalLight(new Vector3f(-0.5f, -0.9f, 0.65f));
+	
 	viewDistance = 4;
     }
     
-    public void update(final PerspectiveCamera camera) {	
+    public void update(final PerspectiveCamera camera, final float delta) {	
 	// Check regions that should unload
 	removeRegionsOutOfRange(camera);
 	
 	// Check regions that should load
 	addRegionsInRange(camera);	
+	
+	// Animate water.
+	WaterRegion.updateMovement(delta);
     }
     
-    public void render(final Shader shader, final PerspectiveCamera camera) {
+    public void render(final PerspectiveCamera camera) {
+	shader.bind();
+	shader.update(camera, directionalLight);
+	
 	for(Entry<String, Region> region : regions.entrySet()) {
-	    region.getValue().render(shader);
+	    region.getValue().preRenderWater(camera, this);
 	}
-
+	
+	renderWithoutWater(camera, false);
+	
+	for(Entry<String, Region> region : regions.entrySet()) {
+	    region.getValue().renderWater(camera, directionalLight);
+	}
+    }
+    
+    public void renderWithoutWater(final PerspectiveCamera camera, final boolean renderReflected) {
+	shader.bind();
+	shader.update(camera, directionalLight);
+	
+	if(renderReflected) {
+	    shader.setUniform("clip_plane", new Vector4f(0, 1, 0, -WaterRegion.WATER_HEIGHT));
+	} else {
+	    shader.setUniform("clip_plane", new Vector4f(0, 0, 0, 0));
+	}
+	
 	if(skybox != null) {
 	    skybox.render(camera);
+	}
+	
+	for(Entry<String, Region> region : regions.entrySet()) {
+	    region.getValue().render(shader);
 	}
     }
     
@@ -66,6 +110,7 @@ public class World {
 	    }
 	}
 	for(String key : regionsToRemove) {
+	    regions.get(key).dispose();
 	    regions.remove(key);
 	}
 	regionsToRemove.clear();

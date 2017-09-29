@@ -12,8 +12,14 @@ uniform mat4 m_proj;
 uniform mat4 m_view;
 uniform mat4 m_model;
 
+uniform vec4 clip_plane;
+
 void main(void) {
-	gl_Position =  m_proj * m_view * m_model * vec4(v_position, 1.0);
+	vec4 world_pos =  m_model * vec4(v_position, 1.0);
+	
+	gl_ClipDistance[0] = dot(world_pos, clip_plane);
+	
+	gl_Position = m_proj * m_view * world_pos;
 	
 	f_position = v_position;
 	f_texcoords = v_texcoords;
